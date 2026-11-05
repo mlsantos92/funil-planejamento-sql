@@ -150,3 +150,39 @@ FROM marcado
 GROUP BY coorte
 HAVING COUNT(*) >= 10
 ORDER BY coorte;
+
+-- name: funil_midia_paga
+-- Cada campanha paga, do lead ao contrato: CPL, taxas de cada etapa e CAC.
+WITH gasto AS (SELECT campanha_id, SUM(valor) AS investimento FROM investimento GROUP BY campanha_id)
+SELECT
+    v.canal, v.campanha,
+    COUNT(*)                                                       AS leads,
+    ROUND(g.investimento / COUNT(*), 2)                            AS cpl,
+    ROUND(100.0 * AVG(v.agendou), 1)                               AS agendamento_pct,
+    ROUND(100.0 * SUM(v.compareceu) / NULLIF(SUM(v.agendou) - SUM(v.reuniao_futura), 0), 1) AS comparecimento_pct,
+    ROUND(100.0 * SUM(v.fechou) / NULLIF(SUM(v.compareceu), 0), 1) AS conversao_reuniao_pct,
+    SUM(v.fechou)                                                  AS contratos,
+    ROUND(g.investimento, 0)                                       AS investimento,
+    ROUND(g.investimento / NULLIF(SUM(v.fechou), 0), 0)            AS cac
+FROM vw_leads v JOIN gasto g ON g.campanha_id = v.campanha_id
+GROUP BY v.canal, v.campanha
+ORDER BY cac;
+
+-- name: cac_por_canal
+-- Custo de aquisição por tipo de canal: investimento total ÷ contratos daquela origem.
+WITH gasto AS (
+    SELECT k.tipo, SUM(i.valor) AS investimento
+    FROM investimento i JOIN campanhas c ON c.campanha_id = i.campanha_id
+    JOIN canais k ON k.canal_id = c.canal_id GROUP BY k.tipo
+),
+contratos_tipo AS (
+    SELECT oc.tipo, COUNT(*) AS contratos, SUM(v.valor) AS faturamento
+    FROM vw_reunioes v JOIN origem_canal oc ON oc.origem = v.origem
+    WHERE v.fechou = 1 GROUP BY oc.tipo
+)
+SELECT g.tipo AS canal, ROUND(g.investimento, 0) AS investimento, ct.contratos,
+       ROUND(g.investimento / NULLIF(ct.contratos, 0), 0)            AS cac,
+       ROUND(ct.faturamento / NULLIF(ct.contratos, 0), 0)            AS ticket_medio,
+       ROUND(ct.faturamento / NULLIF(g.investimento, 0), 2)          AS faturamento_por_real_investido
+FROM gasto g LEFT JOIN contratos_tipo ct ON ct.tipo = g.tipo
+ORDER BY cac;

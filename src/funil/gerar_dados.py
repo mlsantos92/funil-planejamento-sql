@@ -19,6 +19,7 @@ from pathlib import Path
 import numpy as np
 
 RAIZ = Path(__file__).resolve().parents[2]
+PASTA_SQL = Path(__file__).resolve().parent / "sql"  # vai junto com o pacote
 BANCO = RAIZ / "data" / "funil.db"
 DATA_REFERENCIA = date(2026, 11, 5)  # "hoje" para o conjunto de dados
 
@@ -59,6 +60,9 @@ def gerar(semente: int = 2026) -> dict[str, list[tuple]]:
             if dia.weekday() >= 5:  # sem reuniões no fim de semana
                 dia += timedelta(days=7 - dia.weekday())
             criado = dia - timedelta(days=int(rng.integers(2, 45)))
+            # ninguém é cadastrado no futuro: reunião marcada para dezembro
+            # tem cliente cadastrado até a data de referência
+            criado = min(criado, DATA_REFERENCIA - timedelta(days=1))
             cid += 1
             rid += 1
             clientes.append((cid, a + 1, origem, criado.isoformat()))
@@ -91,16 +95,20 @@ def gerar(semente: int = 2026) -> dict[str, list[tuple]]:
             "contratos": contratos, "premissas": premissas}
 
 
-def criar_banco(caminho: Path = BANCO, semente: int = 2026) -> sqlite3.Connection:
+def criar_banco(caminho: Path = BANCO, semente: int = 2026, aquisicao: bool = True) -> sqlite3.Connection:
+    """Cria o banco do funil; com ``aquisicao=True`` inclui canais, leads e investimento."""
     caminho.parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(caminho)
-    con.executescript((RAIZ / "sql" / "01_schema.sql").read_text(encoding="utf-8"))
+    con.executescript((PASTA_SQL / "01_schema.sql").read_text(encoding="utf-8"))
     dados = gerar(semente)
     for tabela, linhas in dados.items():
         marcas = ",".join("?" * len(linhas[0]))
         con.executemany(f"INSERT INTO {tabela} VALUES ({marcas})", linhas)
-    con.executescript((RAIZ / "sql" / "02_views.sql").read_text(encoding="utf-8"))
+    con.executescript((PASTA_SQL / "02_views.sql").read_text(encoding="utf-8"))
     con.commit()
+    if aquisicao:
+        from .aquisicao import criar_camada
+        criar_camada(con)
     return con
 
 

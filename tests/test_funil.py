@@ -52,3 +52,19 @@ def test_coorte_entre_0_e_100(metricas):
     linhas = c.dropna()
     assert (linhas["ate_30d_pct"] <= linhas["ate_60d_pct"]).all()
     assert (linhas["ate_60d_pct"] <= linhas["ate_90d_pct"]).all()
+
+
+def test_camada_aquisicao_fecha_com_funil(con, metricas):
+    # todo cliente de origem "lead" tem exatamente um lead de mídia paga
+    n_clientes = con.execute("SELECT COUNT(*) FROM clientes WHERE origem = 'lead'").fetchone()[0]
+    n_leads_agendados = con.execute("SELECT COUNT(*) FROM leads WHERE cliente_id IS NOT NULL").fetchone()[0]
+    assert n_clientes == n_leads_agendados
+    # o investimento das campanhas soma o total por canal
+    total = con.execute("SELECT SUM(valor) FROM investimento").fetchone()[0]
+    assert metricas["cac_por_canal"]["investimento"].sum() == pytest.approx(total, abs=2)
+
+
+def test_sem_camada_aquisicao(tmp_path):
+    con = criar_banco(tmp_path / "so_funil.db", aquisicao=False)
+    tabelas = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+    assert "leads" not in tabelas

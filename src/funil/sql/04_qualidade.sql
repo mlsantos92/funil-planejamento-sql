@@ -33,3 +33,34 @@ SELECT reuniao_id
 FROM reunioes
 WHERE status = 'prevista'
   AND agendada_para < date((SELECT valor FROM premissas WHERE chave = 'data_referencia_juliana'));
+
+-- name: cliente_criado_no_futuro
+SELECT cliente_id
+FROM clientes
+WHERE criado_em > date((SELECT valor FROM premissas WHERE chave = 'data_referencia_juliana'));
+
+-- name: lead_ligado_a_cliente_de_outra_origem
+SELECT l.lead_id
+FROM leads l JOIN clientes c ON c.cliente_id = l.cliente_id
+WHERE c.origem <> 'lead';
+
+-- name: cliente_de_lead_sem_lead
+SELECT c.cliente_id
+FROM clientes c LEFT JOIN leads l ON l.cliente_id = c.cliente_id
+WHERE c.origem = 'lead' AND l.lead_id IS NULL;
+
+-- name: lead_depois_do_cadastro_do_cliente
+SELECT l.lead_id
+FROM leads l JOIN clientes c ON c.cliente_id = l.cliente_id
+WHERE l.criado_em > c.criado_em;
+
+-- name: lead_no_futuro
+SELECT lead_id FROM leads
+WHERE criado_em > date((SELECT valor FROM premissas WHERE chave = 'data_referencia_juliana'));
+
+-- name: midia_sem_investimento
+-- Todo mês com leads de uma campanha precisa ter gasto registrado.
+SELECT DISTINCT l.campanha_id, strftime('%Y-%m', l.criado_em) AS mes
+FROM leads l
+LEFT JOIN investimento i ON i.campanha_id = l.campanha_id AND i.mes = strftime('%Y-%m', l.criado_em)
+WHERE i.valor IS NULL;

@@ -11,13 +11,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from .gerar_dados import RAIZ, criar_banco
+from .gerar_dados import PASTA_SQL, RAIZ, criar_banco
 
 SAIDAS = RAIZ / "outputs"
 
 
 def consultas(arquivo: str) -> dict[str, str]:
-    texto = (RAIZ / "sql" / arquivo).read_text(encoding="utf-8")
+    texto = (PASTA_SQL / arquivo).read_text(encoding="utf-8")
     partes = re.split(r"^-- name: (\w+)\s*$", texto, flags=re.M)
     return {partes[i]: partes[i + 1].strip() for i in range(1, len(partes), 2)}
 
