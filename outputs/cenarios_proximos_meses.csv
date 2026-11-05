@@ -1,0 +1,7 @@
+mes,cenario,previstas,realizadas_esperadas,contratos_esperados,faturamento_esperado,receita_setor_esperada
+2026-11,pessimista,48,42.3,6.3,20786.0,14550.0
+2026-11,normal,48,42.3,8.5,27715.0,19401.0
+2026-11,otimista,48,42.3,10.6,34644.0,24251.0
+2026-12,pessimista,80,70.6,10.6,34644.0,24251.0
+2026-12,normal,80,70.6,14.1,46192.0,32334.0
+2026-12,otimista,80,70.6,17.6,57740.0,40418.0

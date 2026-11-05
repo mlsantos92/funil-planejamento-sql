@@ -1,0 +1,16 @@
+[project]
+name = "funil"
+version = "1.0.0"
+description = "Funil comercial de planejamento financeiro em SQL (dados fictícios)"
+requires-python = ">=3.10"
+dependencies = ["numpy", "pandas", "matplotlib"]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

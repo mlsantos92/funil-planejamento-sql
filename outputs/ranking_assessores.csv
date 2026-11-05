@@ -1,0 +1,9 @@
+posicao,assessor,equipe,realizadas,contratos,conversao_pct,faturamento,participacao_pct,participacao_acumulada_pct
+1,Elisa Prado,Equipe Sul,49,15,30.6,50000.0,15.9,15.9
+2,Gabriela Lopes,Equipe Sul,52,14,26.9,46750.0,14.9,30.8
+3,Ana Ribeiro,Equipe Norte,55,14,25.5,46000.0,14.6,45.4
+3,Diego Farias,Equipe Norte,38,14,36.8,46000.0,14.6,60.1
+5,Fábio Nunes,Equipe Sul,44,14,31.8,45000.0,14.3,74.4
+6,Bruno Teixeira,Equipe Norte,52,13,25.0,42500.0,13.5,87.9
+7,Henrique Sales,Equipe Sul,42,8,19.0,25750.0,8.2,96.1
+8,Carla Mendes,Equipe Norte,49,4,8.2,12250.0,3.9,100.0
