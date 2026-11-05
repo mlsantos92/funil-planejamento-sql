@@ -62,7 +62,9 @@ def gerar(semente: int = 2026) -> dict[str, list[tuple]]:
             criado = dia - timedelta(days=int(rng.integers(2, 45)))
             # ninguém é cadastrado no futuro: reunião marcada para dezembro
             # tem cliente cadastrado até a data de referência
-            criado = min(criado, DATA_REFERENCIA - timedelta(days=1))
+            if criado >= DATA_REFERENCIA:
+                # mesma antecedência sorteada, contada a partir da data de referência
+                criado = DATA_REFERENCIA - (dia - criado)
             cid += 1
             rid += 1
             clientes.append((cid, a + 1, origem, criado.isoformat()))
@@ -98,6 +100,10 @@ def gerar(semente: int = 2026) -> dict[str, list[tuple]]:
 def criar_banco(caminho: Path = BANCO, semente: int = 2026, aquisicao: bool = True) -> sqlite3.Connection:
     """Cria o banco do funil; com ``aquisicao=True`` inclui canais, leads e investimento."""
     caminho.parent.mkdir(parents=True, exist_ok=True)
+    # sempre do zero: as tabelas de aquisição referenciam clientes e
+    # impediriam o DROP TABLE do esquema num banco já existente
+    if caminho.exists():
+        caminho.unlink()
     con = sqlite3.connect(caminho)
     con.executescript((PASTA_SQL / "01_schema.sql").read_text(encoding="utf-8"))
     dados = gerar(semente)

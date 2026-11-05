@@ -68,3 +68,11 @@ def test_sem_camada_aquisicao(tmp_path):
     con = criar_banco(tmp_path / "so_funil.db", aquisicao=False)
     tabelas = {r[0] for r in con.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     assert "leads" not in tabelas
+
+
+def test_banco_pode_ser_recriado_por_cima(tmp_path):
+    # rodar o relatório duas vezes não pode falhar por causa das chaves estrangeiras
+    caminho = tmp_path / "duas_vezes.db"
+    criar_banco(caminho).close()
+    con = criar_banco(caminho)
+    assert con.execute("SELECT COUNT(*) FROM leads").fetchone()[0] > 0
