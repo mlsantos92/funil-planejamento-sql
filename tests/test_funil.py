@@ -76,3 +76,12 @@ def test_banco_pode_ser_recriado_por_cima(tmp_path):
     criar_banco(caminho).close()
     con = criar_banco(caminho)
     assert con.execute("SELECT COUNT(*) FROM leads").fetchone()[0] > 0
+
+
+def test_evolucao_por_equipe_soma_setor(metricas):
+    e = metricas["evolucao_por_equipe"]
+    setor = e[e["equipe"] == "Setor"].set_index("mes")
+    equipes = e[e["equipe"] != "Setor"].groupby("mes")[["agendadas", "realizadas", "nao_ocorreram", "contratos", "faturamento"]].sum()
+    for col in equipes.columns:
+        assert (equipes[col] - setor.loc[equipes.index, col]).abs().max() <= 1
+    assert (setor["participacao_pct"].dropna() == 100).all()

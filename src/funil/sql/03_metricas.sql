@@ -68,6 +68,32 @@ FROM vw_reunioes
 GROUP BY equipe
 ORDER BY equipe;
 
+-- name: evolucao_por_equipe
+-- Comparativo e evolução mês a mês de cada equipe (unidade) e do setor como um todo.
+-- A linha "Setor" soma as equipes; reuniões que não ocorreram (bolo do cliente) ficam à parte.
+WITH base AS (
+    SELECT mes, equipe,
+           COUNT(*)                 AS agendadas,
+           SUM(realizada)           AS realizadas,
+           SUM(nao_ocorreu)         AS nao_ocorreram,
+           SUM(fechou)              AS contratos,
+           SUM(COALESCE(valor, 0))  AS faturamento
+    FROM vw_reunioes
+    GROUP BY mes, equipe
+    UNION ALL
+    SELECT mes, 'Setor', COUNT(*), SUM(realizada), SUM(nao_ocorreu), SUM(fechou), SUM(COALESCE(valor, 0))
+    FROM vw_reunioes
+    GROUP BY mes
+)
+SELECT
+    mes, equipe, agendadas, realizadas, nao_ocorreram, contratos,
+    ROUND(100.0 * contratos / NULLIF(realizadas, 0), 1)                AS conversao_pct,
+    ROUND(faturamento, 0)                                              AS faturamento,
+    ROUND(100.0 * faturamento / NULLIF(SUM(CASE WHEN equipe = 'Setor' THEN faturamento END)
+          OVER (PARTITION BY mes), 0), 1)                              AS participacao_pct
+FROM base
+ORDER BY mes, equipe = 'Setor', equipe;
+
 -- name: tendencia_conversao
 -- Conversão do mês e média móvel de 3 meses (suaviza o ruído de amostras pequenas).
 WITH m AS (

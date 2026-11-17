@@ -16,6 +16,7 @@ Este banco também é a fonte de dados do [estudo-cac-aquisicao](https://github.
 | Qual origem de cliente converte melhor e com que ticket? | `conversao_por_origem` |
 | Quem são os assessores que mais faturam e quanto o faturamento é concentrado? | `ranking_assessores` |
 | A diferença entre origens se mantém em cada equipe? | `conversao_por_equipe_e_origem` |
+| Como cada equipe (unidade) se compara e evolui mês a mês, frente ao setor? Quantas reuniões não ocorreram? | `evolucao_por_equipe` |
 | A conversão está melhorando ou piorando? | `tendencia_conversao` (média móvel de 3 meses) |
 | Quais negociações estão paradas há mais tempo? | `em_negociacao` |
 | Quanto podemos faturar com as reuniões já agendadas? | `cenarios_proximos_meses` (pessimista, normal, otimista) |
